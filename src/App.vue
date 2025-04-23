@@ -5,14 +5,9 @@
       <barra-lateral @aoTemaAlterado="trocarTema" />
     </div>
     <div class="column is-three-quarter conteudo">
-      <!-- Ouvindo o evento aoSalvarTarefa -->
-      <FormularioTarefas @aoSalvarTarefa="salvarTarefa" />
-      <div class="lista">
-        <Tarefa v-for="(tarefa, index) in tarefas" :key="index" :tarefa="tarefa" />
-        <Box v-if="listaEstaVazia">
-          Você não está muito produtivo hoje !
-        </Box>
-      </div>
+      <Notificacoes></Notificacoes>
+      <!-- AQUI VAI A VIEW CORRESPONDENTE -->
+      <router-view></router-view>
 
     </div>
   </main>
@@ -21,10 +16,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import BarraLateral from './components/BarraLateral.vue';
-import Box from './components/Box.vue';
-import FormularioTarefas from './components/FormularioTarefas.vue';
-import Tarefa from './components/Tarefa.vue';
-import ITarefa from './interfaces/ITarefa'
+import Notificacoes from './components/Notificacoes.vue';
 
 
 
@@ -32,25 +24,16 @@ export default defineComponent({
   name: 'App',
   components: {
     BarraLateral,
-    FormularioTarefas,
-    Tarefa,
-    Box
+    Notificacoes,
   },
   data() {
     return {
-      tarefas: [] as ITarefa[],
       modoEscuroAtivo: false
     }
   },
   computed: {
-    listaEstaVazia(): boolean {
-      return this.tarefas.length === 0
-    }
   },
   methods: {
-    salvarTarefa(tarefa: ITarefa) {
-      this.tarefas.push(tarefa)
-    },
     // Obs: poderia receber dois parâmetros aqui sem problemas, mas dependeria do que foi enviado no evento -> aoTemaAlterado
     trocarTema(modoEscuroAtivo: boolean) {
       this.modoEscuroAtivo = modoEscuroAtivo
