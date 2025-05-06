@@ -8,6 +8,7 @@ type Notificador = {
 
 export default (): Notificador => {
     const notificar = (tipo: TipoNotificacao, titulo: string, texto: string): void => {
+        //Usamos o commit para usar as nossas mutations
         store.commit(NOTIFICAR, {
             titulo,
             texto,

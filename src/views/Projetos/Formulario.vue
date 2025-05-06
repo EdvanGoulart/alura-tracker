@@ -15,11 +15,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useStore } from '@/store'
-import { ADICIONA_PROJETO, ALTERA_PROJETO } from '@/store/tipo-mutacoes'
 import { TipoNotificacao } from '@/interfaces/INotificacao'
 import useNotificador from '@/hooks/notificador'
+import { ALTERAR_PROJETO, CADASTRAR_PROJETO } from '@/store/tipo-acoes'
+import { useRouter } from 'vue-router'
 // import { notificacaoMixin } from '@/mixins/Notificar'
 
 export default defineComponent({
@@ -32,36 +33,57 @@ export default defineComponent({
     // Pesquisar sobre o Mixin, mas ele deu o exemplo
     // mixins: [notificacaoMixin],
     // Quando componente for montado
-    mounted() {
-        if (this.id) {
-            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
-            // Se ele tiver projeto ele atribui e se não adiciona vazio
-            this.nomeDoProjeto = projeto?.nome || ''
-        }
-    },
-    data() {
-        return {
-            nomeDoProjeto: "",
-        }
-    },
-    methods: {
-        salvar() {
-            if (this.id) {
-                this.store.commit(ALTERA_PROJETO, { id: this.id, nome: this.nomeDoProjeto })
-            } else {
-                this.store.commit(ADICIONA_PROJETO, this.nomeDoProjeto)
-            }
+    // mounted() {
+    //     if (this.id) {
+    //         const projeto = this.store.state.projeto.projetos.find(proj => proj.id == this.id)
+    //         // Se ele tiver projeto ele atribui e se não adiciona vazio
+    //         this.nomeDoProjeto = projeto?.nome || ''
+    //     }
+    // },
+    // data() {
+    //     return {
+    //         nomeDoProjeto: "",
+    //     }
+    // },
+    setup(props) {
+        // Dentro do setup n temos acesso a this
 
-            this.nomeDoProjeto = '';
-            this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'Projeto cadastrado com sucesso !')
-            this.$router.push('/projetos')
-        }
-    }, setup() {
+        const router = useRouter()
         const store = useStore()
         const { notificar } = useNotificador()
+
+        const nomeDoProjeto = ref("")
+
+        if (props.id) {
+            const projeto = store.state.projeto.projetos.find(proj => proj.id == props.id)
+            // Se ele tiver projeto ele atribui e se não adiciona vazio
+            nomeDoProjeto.value = projeto?.nome || ''
+        }
+
+        const lidarComSucesso = () => {
+            nomeDoProjeto.value = '';
+            notificar(TipoNotificacao.SUCESSO, 'Excelente', 'Projeto cadastrado com sucesso !')
+            router.push('/projetos')
+        }
+
+        const salvar = () => {
+            if (props.id) {
+                //Usamos o commit para usar as nossas mutations
+                // nomeDoProjeto.value -> o .value é pq é uma variável reativa
+                store.dispatch(ALTERAR_PROJETO, { id: props.id, nome: nomeDoProjeto.value })
+                    .then(() => lidarComSucesso())
+            } else {
+                //Retornando a promice
+                store.dispatch(CADASTRAR_PROJETO, nomeDoProjeto.value)
+                    .then(() => lidarComSucesso())
+            }
+
+
+        }
+
         return {
-            store,
-            notificar
+            nomeDoProjeto,
+            salvar
         }
     }
 })
